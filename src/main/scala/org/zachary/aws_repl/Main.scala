@@ -1,18 +1,21 @@
 package org.zachary.aws_repl
 
+import java.io.{CharArrayWriter, PrintWriter}
+
+import com.amazonaws.ClientConfiguration
+import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.sqs.AmazonSQSClient
 
-import scala.tools.nsc.interpreter.ILoop
 import scala.tools.nsc.Settings
-import java.io.{PrintWriter, CharArrayWriter}
+import scala.tools.nsc.interpreter.ILoop
 
 object Main extends App {
 
-  def repl = new MainLoop
+  def repl = new MainLoop(args)
 
   val settings = new Settings
   settings.Yreplsync.value = true
-  settings.Xnojline.value = true
+//  settings.Xnojline.value = true  // Turns off tab completion
   settings.deprecation.value = true
 
   def isRunFromSBT = {
@@ -30,23 +33,37 @@ object Main extends App {
   }
 
   repl.process(settings)
-  repl.closeInterpreter()
 }
 
-class MainLoop extends ILoop {
+class MainLoop(args: Array[String]) extends ILoop {
+  val parser = new scopt.OptionParser[Config]("scopt") {
+    head("scopt", "3.x")
+    opt[Int]("proxyPort") action { (x, c) => c.copy(proxyPort = Option(x))} optional()
+    opt[String]("proxyHost") action { (x, c) => c.copy(proxyHost = Option(x))} optional()
+  }
 
-  val sqs = new AmazonSQSClient
+  private val configuration: ClientConfiguration = new ClientConfiguration
+
+  parser.parse(args, Config()) map { config => {
+    config.proxyHost.foreach(configuration.setProxyHost)
+    config.proxyPort.foreach(configuration.setProxyPort)
+  }}
+
+  val s3 = new AmazonS3Client(configuration)
+  val sqs = new AmazonSQSClient(configuration)
 
   override def loop(): Unit = {
-    intp.bind("e", "Double", 2.71828)
-    intp.bind("sqs", "AmazonSQSClient", sqs)
+    intp.bind("s3", s3.getClass.getCanonicalName, s3)
+    intp.bind("sqs", sqs.getClass.getCanonicalName, sqs)
     super.loop()
   }
 
-  addThunk {
-    intp.beQuietDuring {
-      intp.addImports("com.amazonaws.services.sqs.AmazonSQSClient")
+    addThunk {
+      intp.beQuietDuring {
+        intp.addImports("com.amazonaws.services.s3.AmazonS3Client")
+        intp.addImports("com.amazonaws.services.sqs.AmazonSQSClient")
+      }
     }
-  }
 }
 
+case class Config(proxyHost: Option[String] = None, proxyPort: Option[Int] = None)
