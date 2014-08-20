@@ -5,6 +5,6 @@ Scala AWS REPL
 
 sbt run
 
-or
+or with options
 
-sbt "run --proxyPort 8080 --proxyHost somehost.com"
+sbt "run --proxyPort 8080 --proxyHost somehost.com --profile prod --region us-west-2"

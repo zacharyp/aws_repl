@@ -3,6 +3,10 @@ package org.zachary.aws_repl
 import java.io.{CharArrayWriter, PrintWriter}
 
 import com.amazonaws.ClientConfiguration
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth._
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.sqs.AmazonSQSClient
 
@@ -40,6 +44,8 @@ class MainLoop(args: Array[String]) extends ILoop {
     head("scopt", "3.x")
     opt[Int]("proxyPort") action { (x, c) => c.copy(proxyPort = Option(x))} optional()
     opt[String]("proxyHost") action { (x, c) => c.copy(proxyHost = Option(x))} optional()
+    opt[String]("profile") action { (x, c) => c.copy(profile = Option(x))} optional()
+    opt[String]("region") action { (x, c) => c.copy(region = Option(x))} optional()
   }
 
   private val configuration: ClientConfiguration = new ClientConfiguration
@@ -49,8 +55,20 @@ class MainLoop(args: Array[String]) extends ILoop {
     config.proxyPort.foreach(configuration.setProxyPort)
   }}
 
-  val s3 = new AmazonS3Client(configuration)
-  val sqs = new AmazonSQSClient(configuration)
+  private val provider: ProfileCredentialsProvider = parser.parse(args, Config()).flatMap {
+      _.profile.map(new ProfileCredentialsProvider(_))}.getOrElse(new ProfileCredentialsProvider)
+
+  private val region: Region = parser.parse(args, Config()).map { config =>
+    config.region.getOrElse("us-west-2") }.map(r => Region.getRegion(Regions.fromName(r))).get
+
+  private val chain: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(provider,
+    new EnvironmentVariableCredentialsProvider,
+    new SystemPropertiesCredentialsProvider)
+
+  val s3 = new AmazonS3Client(chain, configuration)
+  s3.setRegion(region)
+  val sqs = new AmazonSQSClient(chain, configuration)
+  sqs.setRegion(region)
 
   override def loop(): Unit = {
     intp.bind("s3", s3.getClass.getCanonicalName, s3)
@@ -66,4 +84,8 @@ class MainLoop(args: Array[String]) extends ILoop {
     }
 }
 
-case class Config(proxyHost: Option[String] = None, proxyPort: Option[Int] = None)
+case class Config(
+  profile: Option[String] = None,
+  region: Option[String] = None,
+  proxyHost: Option[String] = None,
+  proxyPort: Option[Int] = None)
