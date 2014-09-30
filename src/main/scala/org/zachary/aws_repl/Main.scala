@@ -9,6 +9,7 @@ import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.sqs.AmazonSQSClient
+import com.amazonaws.services.sns.AmazonSNSClient
 
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.ILoop
@@ -69,10 +70,13 @@ class MainLoop(args: Array[String]) extends ILoop {
   s3.setRegion(region)
   val sqs = new AmazonSQSClient(chain, configuration)
   sqs.setRegion(region)
+  val sns = new AmazonSNSClient(chain, configuration)
+  sns.setRegion(region)
 
   override def loop(): Unit = {
     intp.bind("s3", s3.getClass.getCanonicalName, s3)
     intp.bind("sqs", sqs.getClass.getCanonicalName, sqs)
+    intp.bind("sns", sns.getClass.getCanonicalName, sns);
     super.loop()
   }
 
@@ -80,6 +84,7 @@ class MainLoop(args: Array[String]) extends ILoop {
       intp.beQuietDuring {
         intp.addImports("com.amazonaws.services.s3.AmazonS3Client")
         intp.addImports("com.amazonaws.services.sqs.AmazonSQSClient")
+        intp.addImports("com.amazonaws.services.sns.AmazonSNSClient")
       }
     }
 }
