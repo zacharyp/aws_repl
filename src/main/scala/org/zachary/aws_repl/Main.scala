@@ -7,6 +7,7 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth._
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
+import com.amazonaws.services.ec2.AmazonEC2Client
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.sqs.AmazonSQSClient
 import com.amazonaws.services.sns.AmazonSNSClient
@@ -72,11 +73,14 @@ class MainLoop(args: Array[String]) extends ILoop {
   sqs.setRegion(region)
   val sns = new AmazonSNSClient(chain, configuration)
   sns.setRegion(region)
+  val ec2 = new AmazonEC2Client(chain, configuration)
+  ec2.setRegion(region)
 
   override def loop(): Unit = {
     intp.bind("s3", s3.getClass.getCanonicalName, s3)
     intp.bind("sqs", sqs.getClass.getCanonicalName, sqs)
     intp.bind("sns", sns.getClass.getCanonicalName, sns);
+    intp.bind("ec2", ec2.getClass.getCanonicalName, ec2);
     super.loop()
   }
 
@@ -85,6 +89,7 @@ class MainLoop(args: Array[String]) extends ILoop {
         intp.addImports("com.amazonaws.services.s3.AmazonS3Client")
         intp.addImports("com.amazonaws.services.sqs.AmazonSQSClient")
         intp.addImports("com.amazonaws.services.sns.AmazonSNSClient")
+        intp.addImports("com.amazonaws.services.sns.AmazonEC2Client")
       }
     }
 }
