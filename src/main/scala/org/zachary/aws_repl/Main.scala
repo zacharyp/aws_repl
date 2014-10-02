@@ -89,7 +89,7 @@ class MainLoop(args: Array[String]) extends ILoop {
         intp.addImports("com.amazonaws.services.s3.AmazonS3Client")
         intp.addImports("com.amazonaws.services.sqs.AmazonSQSClient")
         intp.addImports("com.amazonaws.services.sns.AmazonSNSClient")
-        intp.addImports("com.amazonaws.services.sns.AmazonEC2Client")
+        intp.addImports("com.amazonaws.services.ec2.AmazonEC2Client")
       }
     }
 }
