@@ -9,5 +9,6 @@ mainClass in (Compile, run) := Some("org.zachary.aws_repl.Main")
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk" % "1.8.9.1",
   "org.scala-lang" % "scala-compiler" % "2.10.4",
-  "com.github.scopt" %% "scopt" % "3.2.0"
+  "com.github.scopt" %% "scopt" % "3.2.0",
+  "org.json4s" %% "json4s-jackson" % "3.2.10"
 )

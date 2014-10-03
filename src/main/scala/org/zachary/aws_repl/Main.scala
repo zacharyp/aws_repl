@@ -3,14 +3,9 @@ package org.zachary.aws_repl
 import java.io.{CharArrayWriter, PrintWriter}
 
 import com.amazonaws.ClientConfiguration
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth._
-import com.amazonaws.regions.Region
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.ec2.AmazonEC2Client
-import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.sqs.AmazonSQSClient
-import com.amazonaws.services.sns.AmazonSNSClient
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.regions.{Region, Regions}
 
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.ILoop
@@ -67,11 +62,11 @@ class MainLoop(args: Array[String]) extends ILoop {
     new EnvironmentVariableCredentialsProvider,
     new SystemPropertiesCredentialsProvider)
 
-  val s3 = new AmazonS3Client(chain, configuration)
+  val s3 = new ExtendedS3Client(chain, configuration)
   s3.setRegion(region)
-  val sqs = new AmazonSQSClient(chain, configuration)
+  val sqs = new ExtendedSQSClient(chain, configuration)
   sqs.setRegion(region)
-  val sns = new AmazonSNSClient(chain, configuration)
+  val sns = new ExtendedSNSClient(chain, configuration)
   sns.setRegion(region)
   val ec2 = new ExtendedEC2Client(chain, configuration)
   ec2.setRegion(region)
