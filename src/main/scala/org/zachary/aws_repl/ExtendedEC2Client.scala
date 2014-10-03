@@ -7,7 +7,7 @@ import com.amazonaws.services.ec2.model.DeregisterImageRequest
 
 class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonEC2Client(awscp, cc) {
 
-  def deregisterImage(imageId: String): Unit = {
-    deregisterImage(new DeregisterImageRequest(imageId))
+  def deregisterImage(amiId: String): Unit = {
+    deregisterImage(new DeregisterImageRequest(amiId))
   }
 }
