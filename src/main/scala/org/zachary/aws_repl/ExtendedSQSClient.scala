@@ -6,14 +6,11 @@ import com.amazonaws.services.sqs.model.{QueueDoesNotExistException, SetQueueAtt
 import com.amazonaws.{AmazonServiceException, ClientConfiguration}
 import org.json4s.NoTypeHints
 import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization.{read, write}
+import org.json4s.jackson.Serialization.write
 
 import scala.collection.JavaConverters._
 
-case class RedrivePolicy(
-  deadLetterTargetArn: String,
-  maxReceiveCount: Int
-)
+case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
 
 class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonSQSClient(awscp, cc) {
 
