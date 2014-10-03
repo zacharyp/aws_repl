@@ -73,7 +73,7 @@ class MainLoop(args: Array[String]) extends ILoop {
   sqs.setRegion(region)
   val sns = new AmazonSNSClient(chain, configuration)
   sns.setRegion(region)
-  val ec2 = new AmazonEC2Client(chain, configuration)
+  val ec2 = new ExtendedEC2Client(chain, configuration)
   ec2.setRegion(region)
 
   override def loop(): Unit = {
