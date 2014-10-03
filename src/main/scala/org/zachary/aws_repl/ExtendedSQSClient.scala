@@ -59,7 +59,7 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
       setQueueAttributes(request)
     } catch {
       case ex: QueueDoesNotExistException => println("The specified queue does not exist.")
-      case ex: AmazonServiceException => println("Invalid visibility timeout.")
+      case ex: AmazonServiceException => println("Invalid request.")
     }
   }
 }
