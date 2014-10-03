@@ -74,8 +74,8 @@ class MainLoop(args: Array[String]) extends ILoop {
   override def loop(): Unit = {
     intp.bind("s3", s3.getClass.getCanonicalName, s3)
     intp.bind("sqs", sqs.getClass.getCanonicalName, sqs)
-    intp.bind("sns", sns.getClass.getCanonicalName, sns);
-    intp.bind("ec2", ec2.getClass.getCanonicalName, ec2);
+    intp.bind("sns", sns.getClass.getCanonicalName, sns)
+    intp.bind("ec2", ec2.getClass.getCanonicalName, ec2)
     super.loop()
   }
 
