@@ -14,6 +14,12 @@ case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
 
 class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonSQSClient(awscp, cc) {
 
+  def getQueueArn(queueName: String): String = {
+    val attributes: GetQueueAttributesResult = getQueueAttributes(new
+        GetQueueAttributesRequest(getQueueUrl(queueName).getQueueUrl, List("All").asJava))
+    attributes.getAttributes.get("QueueArn")
+  }
+
   def deleteQueueByName(queueName: String): Unit = {
     try {
       deleteQueue(new DeleteQueueRequest(getQueueUrl(queueName).getQueueUrl))

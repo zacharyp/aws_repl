@@ -8,7 +8,7 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.{Region, Regions}
 
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.ILoop
+import scala.tools.nsc.interpreter.{NamedParam, ILoop}
 
 object Main extends App {
 
@@ -66,16 +66,16 @@ class MainLoop(args: Array[String]) extends ILoop {
   s3.setRegion(region)
   val sqs = new ExtendedSQSClient(chain, configuration)
   sqs.setRegion(region)
-  val sns = new ExtendedSNSClient(chain, configuration)
+  val sns = new ExtendedSNSClient(chain, configuration, sqs)
   sns.setRegion(region)
   val ec2 = new ExtendedEC2Client(chain, configuration)
   ec2.setRegion(region)
 
   override def loop(): Unit = {
-    intp.bind("s3", s3.getClass.getCanonicalName, s3)
-    intp.bind("sqs", sqs.getClass.getCanonicalName, sqs)
-    intp.bind("sns", sns.getClass.getCanonicalName, sns)
-    intp.bind("ec2", ec2.getClass.getCanonicalName, ec2)
+    intp.quietBind(NamedParam("s3", s3.getClass.getCanonicalName, s3))
+    intp.quietBind(NamedParam("sqs", sqs.getClass.getCanonicalName, sqs))
+    intp.quietBind(NamedParam("sns", sns.getClass.getCanonicalName, sns))
+    intp.quietBind(NamedParam("ec2", ec2.getClass.getCanonicalName, ec2))
     super.loop()
   }
 
