@@ -47,6 +47,17 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     }
   }
 
+  def setQueueDelaySeconds(queueName: String, delaySeconds: Int = 0): Unit = {
+    try {
+      val attributes = Map[String, String]("DelaySeconds" -> delaySeconds.toString)
+      val request = new SetQueueAttributesRequest(getQueueUrl(queueName).getQueueUrl, attributes.asJava)
+      setQueueAttributes(request)
+    } catch {
+      case ex: QueueDoesNotExistException => println("The specified queue does not exist.")
+      case ex: AmazonServiceException => println("Invalid delay seconds (0 - 900 allowed).")
+    }
+  }
+
   def setQueueRedrivePolicy(queueName: String, deadLetterTargetArn: String, maxReceiveCount: Int = 5): Unit = {
     implicit val formats = Serialization.formats(NoTypeHints)
     try {
