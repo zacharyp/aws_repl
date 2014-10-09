@@ -2,7 +2,7 @@ package org.zachary.aws_repl
 
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.sqs.AmazonSQSClient
-import com.amazonaws.services.sqs.model.{QueueDoesNotExistException, SetQueueAttributesRequest}
+import com.amazonaws.services.sqs.model._
 import com.amazonaws.{AmazonServiceException, ClientConfiguration}
 import org.json4s.NoTypeHints
 import org.json4s.jackson.Serialization
@@ -13,6 +13,14 @@ import scala.collection.JavaConverters._
 case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
 
 class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonSQSClient(awscp, cc) {
+
+  def deleteQueueByName(queueName: String): Unit = {
+    try {
+      deleteQueue(new DeleteQueueRequest(getQueueUrl(queueName).getQueueUrl))
+    } catch {
+      case _: Throwable => println("Could not delete queue with name %s", queueName)
+    }
+  }
 
   def setQueueMaximumMessageSize(queueName: String, size: Int = 262144): Unit = {
     try {
