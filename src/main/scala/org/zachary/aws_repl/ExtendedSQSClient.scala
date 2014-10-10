@@ -20,6 +20,12 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     attributes.getAttributes.get("QueueArn")
   }
 
+  def getAllAttributes(queueName: String): String = {
+    val attributes: GetQueueAttributesResult = getQueueAttributes(new
+        GetQueueAttributesRequest(getQueueUrl(queueName).getQueueUrl, List("All").asJava))
+    attributes.toString
+  }
+
   def deleteQueueByName(queueName: String): Unit = {
     try {
       deleteQueue(new DeleteQueueRequest(getQueueUrl(queueName).getQueueUrl))
@@ -92,4 +98,21 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
       case ex: AmazonServiceException => println("Invalid request.")
     }
   }
+
+  def addQueuePolicy(queueName: String, snsArn: String, action: String = "SendMessage"): Unit = {
+    val arn: String = getQueueArn(queueName)
+    val policyString = s"""{"Version":"2012-10-17","Statement":[{"Sid":"topic-subscription-arn:$snsArn","Effect":"Allow","Principal":{"AWS":"*"},"Action":"sqs:$action","Resource":"$arn","Condition":{"ArnLike":{"aws:SourceArn":"$snsArn"}}}]}"""
+    val attributes = Map[String, String]("Policy" -> policyString)
+
+    setQueueAttributes(getQueueUrl(queueName).getQueueUrl, attributes.asJava)
+  }
+
+  def removePolicy(queueName: String): Unit = {
+    val arn: String = getQueueArn(queueName)
+    val policyString = s"""{"Version":"2012-10-17","Id":"$arn"}"""
+    val attributes = Map[String, String]("Policy" -> policyString)
+
+    setQueueAttributes(getQueueUrl(queueName).getQueueUrl, attributes.asJava)
+  }
+
 }
