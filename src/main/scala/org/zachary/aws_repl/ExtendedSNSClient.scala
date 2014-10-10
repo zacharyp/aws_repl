@@ -9,8 +9,13 @@ import scala.collection.JavaConverters._
 class ExtendedSNSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration, sqs: ExtendedSQSClient)
   extends AmazonSNSClient(awscp, cc) {
 
-  def subscribeQueue(topicArn: String, queueName: String): Unit = {
-    subscribe(topicArn, "sqs", sqs.getQueueArn(queueName))
+  def subscribeQueue(topicArn: String, queueName: String, raw: Boolean = false): Unit = {
+    val subscribeResult = subscribe(topicArn, "sqs", sqs.getQueueArn(queueName))
+
+    if (raw) {
+      val arn: String = subscribeResult.getSubscriptionArn
+      setSubscriptionAttributes(arn, "RawMessageDelivery", "true")
+    }
   }
 
   def unsubscribeQueue(topicArn: String, queueName: String): Unit = {

@@ -28,6 +28,14 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     }
   }
 
+  def deleteQueueByUrl(queueUrl: String): Unit = {
+    try {
+      deleteQueue(new DeleteQueueRequest(queueUrl))
+    } catch {
+      case _: Throwable => println("Could not delete queue with name %s", queueUrl)
+    }
+  }
+
   def setQueueMaximumMessageSize(queueName: String, size: Int = 262144): Unit = {
     try {
       val attributes = Map[String, String]("MaximumMessageSize" -> size.toString)
