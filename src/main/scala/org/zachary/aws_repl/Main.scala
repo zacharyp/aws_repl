@@ -1,6 +1,7 @@
 package org.zachary.aws_repl
 
 import java.io.{CharArrayWriter, PrintWriter}
+import java.net.URL
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth._
@@ -37,56 +38,50 @@ object Main extends App {
 }
 
 class MainLoop(args: Array[String]) extends ILoop {
-  val parser = new scopt.OptionParser[Config]("scopt") {
-    head("scopt", "3.x")
+
+  val parser = new scopt.OptionParser[Config]("aws_repl") {
+    head("aws_repl", "1.0")
     opt[Int]("proxyPort") action { (x, c) => c.copy(proxyPort = Option(x))} optional()
     opt[String]("proxyHost") action { (x, c) => c.copy(proxyHost = Option(x))} optional()
     opt[String]("profile") action { (x, c) => c.copy(profile = Option(x))} optional()
     opt[String]("region") action { (x, c) => c.copy(region = Option(x))} optional()
   }
 
-  private val configuration: ClientConfiguration = new ClientConfiguration
+  val (configuration: ClientConfiguration, provider: AWSCredentialsProvider, region: Region) =
+    parser.parse(args, Config()).map({ config: Config =>
 
-  parser.parse(args, Config()) map { config => {
-    config.proxyHost.foreach(configuration.setProxyHost)
-    config.proxyPort.foreach(configuration.setProxyPort)
-  }}
+      val envProxy: Option[String] = sys.env.get("HTTP_PROXY") orElse
+                                     sys.env.get("http_proxy") orElse
+                                     sys.env.get("HTTPS_PROXY") orElse
+                                     sys.env.get("https_proxy")
+      val proxyHostFromEnv: Option[String] = envProxy map(new URL(_).getHost)
+      val proxyPortFromEnv: Option[Int] = envProxy map(new URL(_).getPort)
 
-  private val provider: ProfileCredentialsProvider = parser.parse(args, Config()).flatMap {
-      _.profile.map(new ProfileCredentialsProvider(_))}.getOrElse(new ProfileCredentialsProvider)
+      config.proxyHost orElse proxyHostFromEnv getOrElse(null)
 
-  private val region: Region = parser.parse(args, Config()).map { config =>
-    config.region.getOrElse("us-west-2") }.map(r => Region.getRegion(Regions.fromName(r))).get
+      val configuration = new ClientConfiguration()
+        .withProxyHost(config.proxyHost orElse proxyHostFromEnv getOrElse(null))
+        .withProxyPort(config.proxyPort orElse proxyPortFromEnv getOrElse(-1))
+      val provider = config.profile map(new ProfileCredentialsProvider(_)) getOrElse new DefaultAWSCredentialsProviderChain
+      val region = Region.getRegion(Regions.fromName(config.region.getOrElse("us-west-2")))
 
-  private val chain: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(provider,
-    new EnvironmentVariableCredentialsProvider,
-    new SystemPropertiesCredentialsProvider)
+      (configuration, provider, region)
+    }).getOrElse(throw new RuntimeException("Could not config options."))
 
-  val s3 = new ExtendedS3Client(chain, configuration)
-  s3.setRegion(region)
-  val sqs = new ExtendedSQSClient(chain, configuration)
-  sqs.setRegion(region)
-  val sns = new ExtendedSNSClient(chain, configuration, sqs)
-  sns.setRegion(region)
-  val ec2 = new ExtendedEC2Client(chain, configuration)
-  ec2.setRegion(region)
+  val clients = new Clients(provider, configuration, region)
 
   override def loop(): Unit = {
-    intp.quietBind(NamedParam("s3", s3.getClass.getCanonicalName, s3))
-    intp.quietBind(NamedParam("sqs", sqs.getClass.getCanonicalName, sqs))
-    intp.quietBind(NamedParam("sns", sns.getClass.getCanonicalName, sns))
-    intp.quietBind(NamedParam("ec2", ec2.getClass.getCanonicalName, ec2))
+    clients.bindings.foreach { case (name, instance) =>
+        intp.quietBind(NamedParam(name, instance.getClass.getCanonicalName, instance))
+    }
     super.loop()
   }
 
-    addThunk {
-      intp.beQuietDuring {
-        intp.addImports("com.amazonaws.services.s3.AmazonS3Client")
-        intp.addImports("com.amazonaws.services.sqs.AmazonSQSClient")
-        intp.addImports("com.amazonaws.services.sns.AmazonSNSClient")
-        intp.addImports("com.amazonaws.services.ec2.AmazonEC2Client")
-      }
+  addThunk {
+    intp.beQuietDuring {
+      intp.addImports("com.amazonaws.services.s3._")
     }
+  }
 }
 
 case class Config(
