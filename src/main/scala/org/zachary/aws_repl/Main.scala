@@ -40,7 +40,7 @@ object Main extends App {
 class MainLoop(args: Array[String]) extends ILoop {
 
   val parser = new scopt.OptionParser[Config]("aws_repl") {
-    head("aws_repl", "1.0")
+    head(BuildInfo.name, BuildInfo.version)
     opt[Int]("proxyPort") action { (x, c) => c.copy(proxyPort = Option(x))} optional()
     opt[String]("proxyHost") action { (x, c) => c.copy(proxyHost = Option(x))} optional()
     opt[String]("profile") action { (x, c) => c.copy(profile = Option(x))} optional()
