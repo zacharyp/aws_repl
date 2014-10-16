@@ -12,6 +12,19 @@ import scala.collection.JavaConverters._
 
 class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonSQSClient(awscp, cc) {
 
+  def getMessages(queueName: String, numberOfMessages: Int = 10): List[Message] = {
+    val request: ReceiveMessageRequest = new ReceiveMessageRequest(getQueueUrl(queueName).getQueueUrl)
+    request.setMaxNumberOfMessages(numberOfMessages)
+    receiveMessage(request).getMessages.asScala.toList
+  }
+
+  def deleteMessages(queueName: String, messages: List[Message]): Unit = {
+    val deleteRequests: List[DeleteMessageBatchRequestEntry] = messages.map(message => {
+      new DeleteMessageBatchRequestEntry(message.getMessageId, message.getReceiptHandle)
+    })
+    deleteMessageBatch(new DeleteMessageBatchRequest(getQueueUrl(queueName).getQueueUrl, deleteRequests.asJava))
+  }
+
   def getQueueArn(queueName: String): String = {
     val attributes: GetQueueAttributesResult = getQueueAttributes(new
         GetQueueAttributesRequest(getQueueUrl(queueName).getQueueUrl, List("All").asJava))
