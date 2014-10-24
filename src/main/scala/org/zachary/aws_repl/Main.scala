@@ -13,8 +13,6 @@ import scala.tools.nsc.interpreter.{NamedParam, ILoop}
 
 object Main extends App {
 
-  def repl = new MainLoop(args)
-
   val settings = new Settings
   settings.Yreplsync.value = true
 //  settings.Xnojline.value = true  // Turns off tab completion
@@ -34,7 +32,7 @@ object Main extends App {
     settings.usejavacp.value = true
   }
 
-  repl.process(settings)
+  new MainLoop(args).process(settings)
 }
 
 class MainLoop(args: Array[String]) extends ILoop {
