@@ -10,6 +10,9 @@ import org.json4s.jackson.Serialization.write
 
 import scala.collection.JavaConverters._
 
+
+case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
+
 class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonSQSClient(awscp, cc) {
 
   def getMessages(queueName: String, numberOfMessages: Int = 10): List[Message] = {
@@ -98,7 +101,6 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
   }
 
   def setQueueRedrivePolicy(queueName: String, deadLetterTargetArn: String, maxReceiveCount: Int = 5): Unit = {
-    case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
 
     implicit val formats = Serialization.formats(NoTypeHints)
     try {
