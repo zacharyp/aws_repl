@@ -9,7 +9,7 @@ import scala.util.Try
 
 class ExtendedRDSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonRDSClient(awscp, cc) {
 
-  def describeDBInstancesRequest(dBInstanceIdentifier: String) =
+  private def describeDBInstancesRequest(dBInstanceIdentifier: String) =
     new DescribeDBInstancesRequest().withDBInstanceIdentifier(dBInstanceIdentifier)
 
   def deleteDBInstanceByName(dbInstanceIdentifier: String,
