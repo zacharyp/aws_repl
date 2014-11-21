@@ -10,7 +10,23 @@ import org.json4s.jackson.Serialization.write
 
 import scala.collection.JavaConverters._
 
+
+case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
+
 class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonSQSClient(awscp, cc) {
+
+  def getMessages(queueName: String, numberOfMessages: Int = 10): List[Message] = {
+    val request: ReceiveMessageRequest = new ReceiveMessageRequest(getQueueUrl(queueName).getQueueUrl)
+    request.setMaxNumberOfMessages(numberOfMessages)
+    receiveMessage(request).getMessages.asScala.toList
+  }
+
+  def deleteMessages(queueName: String, messages: List[Message]): Unit = {
+    val deleteRequests: List[DeleteMessageBatchRequestEntry] = messages.map(message => {
+      new DeleteMessageBatchRequestEntry(message.getMessageId, message.getReceiptHandle)
+    })
+    deleteMessageBatch(new DeleteMessageBatchRequest(getQueueUrl(queueName).getQueueUrl, deleteRequests.asJava))
+  }
 
   def getQueueArn(queueName: String): String = {
     val attributes: GetQueueAttributesResult = getQueueAttributes(new
@@ -85,7 +101,6 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
   }
 
   def setQueueRedrivePolicy(queueName: String, deadLetterTargetArn: String, maxReceiveCount: Int = 5): Unit = {
-    case class RedrivePolicy(deadLetterTargetArn: String, maxReceiveCount: Int)
 
     implicit val formats = Serialization.formats(NoTypeHints)
     try {
