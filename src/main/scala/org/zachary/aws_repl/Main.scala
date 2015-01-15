@@ -9,15 +9,13 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.{Region, Regions}
 
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{NamedParam, ILoop}
+import scala.tools.nsc.interpreter.{ILoop, NamedParam}
 
 object Main extends App {
 
-  def repl = new MainLoop(args)
-
   val settings = new Settings
   settings.Yreplsync.value = true
-//  settings.Xnojline.value = true  // Turns off tab completion
+  //  settings.Xnojline.value = true  // Turns off tab completion
   settings.deprecation.value = true
 
   def isRunFromSBT = {
@@ -34,7 +32,7 @@ object Main extends App {
     settings.usejavacp.value = true
   }
 
-  repl.process(settings)
+  new MainLoop(args).process(settings)
 }
 
 class MainLoop(args: Array[String]) extends ILoop {
@@ -51,18 +49,16 @@ class MainLoop(args: Array[String]) extends ILoop {
     parser.parse(args, Config()).map({ config: Config =>
 
       val envProxy: Option[String] = sys.env.get("HTTP_PROXY") orElse
-                                     sys.env.get("http_proxy") orElse
-                                     sys.env.get("HTTPS_PROXY") orElse
-                                     sys.env.get("https_proxy")
-      val proxyHostFromEnv: Option[String] = envProxy map(new URL(_).getHost)
-      val proxyPortFromEnv: Option[Int] = envProxy map(new URL(_).getPort)
-
-      config.proxyHost orElse proxyHostFromEnv getOrElse(null)
+        sys.env.get("http_proxy") orElse
+        sys.env.get("HTTPS_PROXY") orElse
+        sys.env.get("https_proxy")
+      val proxyHostFromEnv: Option[String] = envProxy map (new URL(_).getHost)
+      val proxyPortFromEnv: Option[Int] = envProxy map (new URL(_).getPort)
 
       val configuration = new ClientConfiguration()
-        .withProxyHost(config.proxyHost orElse proxyHostFromEnv getOrElse(null))
-        .withProxyPort(config.proxyPort orElse proxyPortFromEnv getOrElse(-1))
-      val provider = config.profile map(new ProfileCredentialsProvider(_)) getOrElse new DefaultAWSCredentialsProviderChain
+        .withProxyHost((config.proxyHost orElse proxyHostFromEnv).orNull)
+        .withProxyPort(config.proxyPort orElse proxyPortFromEnv getOrElse (-1))
+      val provider = config.profile map (new ProfileCredentialsProvider(_)) getOrElse new DefaultAWSCredentialsProviderChain
       val region = Region.getRegion(Regions.fromName(config.region.getOrElse("us-west-2")))
 
       (configuration, provider, region)
@@ -72,7 +68,7 @@ class MainLoop(args: Array[String]) extends ILoop {
 
   override def loop(): Unit = {
     clients.bindings.foreach { case (name, instance) =>
-        intp.quietBind(NamedParam(name, instance.getClass.getCanonicalName, instance))
+      intp.quietBind(NamedParam(name, instance.getClass.getCanonicalName, instance))
     }
     super.loop()
   }
@@ -85,7 +81,7 @@ class MainLoop(args: Array[String]) extends ILoop {
 }
 
 case class Config(
-  profile: Option[String] = None,
-  region: Option[String] = None,
-  proxyHost: Option[String] = None,
-  proxyPort: Option[Int] = None)
+                   profile: Option[String] = None,
+                   region: Option[String] = None,
+                   proxyHost: Option[String] = None,
+                   proxyPort: Option[Int] = None)
