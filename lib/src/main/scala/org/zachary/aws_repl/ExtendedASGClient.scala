@@ -9,6 +9,43 @@ import scala.collection.JavaConverters._
 
 class ExtendedASGClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonAutoScalingClient(awscp, cc) {
 
+  def createAutoScalingGroup(asgName: String, launchConfigurationName: String, vpcZoneIdentifier: String,
+    healthCheckType: String = "EC2", healthCheckGracePeriod: Int = 300, minimumSize: Int = 0, maximumSize: Int = 0,
+    desiredCapacity: Int = 0, defaultCooldown: Int = 300): Unit = {
+    val request: CreateAutoScalingGroupRequest = new CreateAutoScalingGroupRequest
+    request.setAutoScalingGroupName(asgName)
+    request.setLaunchConfigurationName(launchConfigurationName)
+    request.setVPCZoneIdentifier(vpcZoneIdentifier)
+    request.setHealthCheckType(healthCheckType)
+    request.setHealthCheckGracePeriod(healthCheckGracePeriod)
+    request.setMinSize(minimumSize)
+    request.setMaxSize(maximumSize)
+    request.setDesiredCapacity(desiredCapacity)
+    request.setDefaultCooldown(defaultCooldown)
+    createAutoScalingGroup(request)
+  }
+
+  def deleteAutoScalingGroup(asgName: String, forceDelete: Boolean): Unit = {
+    val request: DeleteAutoScalingGroupRequest = new DeleteAutoScalingGroupRequest
+    request.setAutoScalingGroupName(asgName)
+    request.setForceDelete(forceDelete)
+    deleteAutoScalingGroup(request)
+  }
+
+  def createLaunchConfiguration(launchConfigurationName: String, imageId: String, securityGroups: List[String],
+    iamInstanceProfile: String, userData: String, keyName: String, instanceType: String = "m3.large"): Unit = {
+    val request: CreateLaunchConfigurationRequest = new CreateLaunchConfigurationRequest
+    request.setLaunchConfigurationName(launchConfigurationName)
+    request.setImageId(imageId)
+    request.setSecurityGroups(securityGroups.asJava)
+    request.setIamInstanceProfile(iamInstanceProfile)
+    request.setUserData(userData)
+    request.setKeyName(keyName)
+    request.setInstanceType(instanceType)
+    createLaunchConfiguration(request)
+  }
+
+
   def createTags(asgId: String, tags: Map[String, String], propagateAtLaunch: Boolean = true): Unit = {
     val createRequest: CreateOrUpdateTagsRequest = new CreateOrUpdateTagsRequest
     val tagsList: List[Tag] = tagsMapToTagList(asgId, tags, propagateAtLaunch)
