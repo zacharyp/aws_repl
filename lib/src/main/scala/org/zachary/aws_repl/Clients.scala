@@ -12,6 +12,7 @@ class Clients(provider: AWSCredentialsProvider, configuration: ClientConfigurati
   val ec2 = new ExtendedEC2Client(provider, configuration)
   val rds = new ExtendedRDSClient(provider, configuration)
   val cloudwatch = new ExtendedCloudWatchClient(provider, configuration)
+  val asg = new ExtendedASGClient(provider, configuration)
 
   val bindings = Map(
     "s3" -> s3,
@@ -19,7 +20,8 @@ class Clients(provider: AWSCredentialsProvider, configuration: ClientConfigurati
     "sns" -> sns,
     "ec2" -> ec2,
     "rds" -> rds,
-    "cloudwatch" -> cloudwatch
+    "cloudwatch" -> cloudwatch,
+    "asg" -> asg
   )
 
   bindings.foreach { case (name, instance) =>
