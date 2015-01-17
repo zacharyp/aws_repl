@@ -38,6 +38,7 @@ class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     deleteTags(request)
   }
 
+  // ec2.createTagsOnInstancesByName("foo-node-*", "projectid", "some.value")
   def createTagsOnInstancesByName(instanceName: String, tagName: String, tagValue: String): Unit = {
     val filters: Filter = new Filter("tag:Name", List(s"$instanceName").asJava)
     val request: DescribeInstancesRequest = new DescribeInstancesRequest
