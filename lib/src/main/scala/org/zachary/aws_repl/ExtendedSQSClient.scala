@@ -130,4 +130,8 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     setQueueAttributes(getQueueUrl(queueName).getQueueUrl, attributes.asJava)
   }
 
+  def createQueueByName(queueName: String): Unit = {
+    createQueue(new CreateQueueRequest(queueName))
+  }
+
 }
