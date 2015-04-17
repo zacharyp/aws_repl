@@ -5,7 +5,7 @@ scalaVersion := "2.10.4"
 
 lazy val lib = Project("lib", file("lib")).settings(
   libraryDependencies ++= Seq(
-    "com.amazonaws" % "aws-java-sdk" % "1.9.0",
+    "com.amazonaws" % "aws-java-sdk" % "1.9.17",
     "org.scala-lang" % "scala-compiler" % "2.10.4",
     "org.json4s" %% "json4s-jackson" % "3.2.10"
   )

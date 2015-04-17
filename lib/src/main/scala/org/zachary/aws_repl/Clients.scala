@@ -6,26 +6,28 @@ import com.amazonaws.regions.Region
 
 class Clients(provider: AWSCredentialsProvider, configuration: ClientConfiguration, region: Region) {
 
-  val s3 = new ExtendedS3Client(provider, configuration)
-  val sqs = new ExtendedSQSClient(provider, configuration)
-  val sns = new ExtendedSNSClient(provider, configuration, sqs)
+  val asg = new ExtendedASGClient(provider, configuration)
+  val cloudwatch = new ExtendedCloudWatchClient(provider, configuration)
   val ec2 = new ExtendedEC2Client(provider, configuration)
   val rds = new ExtendedRDSClient(provider, configuration)
-  val cloudwatch = new ExtendedCloudWatchClient(provider, configuration)
-  val asg = new ExtendedASGClient(provider, configuration)
+//  val route53 = new ExtendedRoute53(provider, configuration)
+  val s3 = new ExtendedS3Client(provider, configuration)
+  lazy val sns = new ExtendedSNSClient(provider, configuration, sqs)
+  val sqs = new ExtendedSQSClient(provider, configuration)
 
   val bindings = Map(
-    "s3" -> s3,
-    "sqs" -> sqs,
-    "sns" -> sns,
+    "asg" -> asg,
+    "cloudwatch" -> cloudwatch,
     "ec2" -> ec2,
     "rds" -> rds,
-    "cloudwatch" -> cloudwatch,
-    "asg" -> asg
+//    "route53" -> route53,
+    "s3" -> s3,
+    "sns" -> sns,
+    "sqs" -> sqs
   )
 
   bindings.foreach { case (name, instance) =>
     instance.setRegion(region)
-  }
+                   }
 
 }
