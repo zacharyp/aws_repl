@@ -6,9 +6,18 @@ import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient
 import com.amazonaws.services.cloudwatch.model.{DescribeAlarmsRequest, MetricAlarm, PutMetricAlarmRequest}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class ExtendedCloudWatchClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration)
   extends AmazonCloudWatchClient(awscp, cc) {
+
+  def describeAlarm(alarmName: String): Unit = {
+    val dar: DescribeAlarmsRequest = new DescribeAlarmsRequest
+    dar.setAlarmNames(List(alarmName).asJava)
+
+    val alarm: MetricAlarm = describeAlarms(dar).getMetricAlarms.asScala.toList(0)
+    print(alarm)
+  }
 
   private def updateAlarm(alarmName: String, f: PutMetricAlarmRequest => Unit): Unit = {
     val dar: DescribeAlarmsRequest = new DescribeAlarmsRequest
