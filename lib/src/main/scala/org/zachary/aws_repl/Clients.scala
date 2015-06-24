@@ -28,6 +28,6 @@ class Clients(provider: AWSCredentialsProvider, configuration: ClientConfigurati
 
   bindings.foreach { case (name, instance) =>
     instance.setRegion(region)
-                   }
+  }
 
 }

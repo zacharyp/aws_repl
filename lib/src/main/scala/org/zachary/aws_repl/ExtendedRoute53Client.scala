@@ -10,6 +10,10 @@ import scala.collection.JavaConverters._
 class ExtendedRoute53Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration)
   extends AmazonRoute53Client(awscp, cc) {
 
+  def listHZones(): Seq[HostedZone] = {
+    listHostedZones().getHostedZones.asScala
+  }
+
   def getHostedZoneId(name: String): String =
     listHostedZones().getHostedZones.asScala.find(_.getName == name).map(_.getId).get
 

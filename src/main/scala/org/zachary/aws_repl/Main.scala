@@ -9,7 +9,7 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.{Region, Regions}
 
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{NamedParamClass, NamedParam, SparkILoop}
+import scala.tools.nsc.interpreter.{ILoop, NamedParamClass}
 
 object Main extends App {
 
@@ -35,9 +35,9 @@ object Main extends App {
   new MainLoop(args).process(settings)
 }
 
-class MainLoop(args: Array[String]) extends SparkILoop {
+class MainLoop(args: Array[String]) extends ILoop {
 
-  val parser = new scopt.OptionParser[Config]("aws_repl") {
+  lazy val parser = new scopt.OptionParser[Config]("aws_repl") {
     head(BuildInfo.name, BuildInfo.version)
     opt[Int]("proxyPort") action { (x, c) => c.copy(proxyPort = Option(x)) } optional()
     opt[String]("proxyHost") action { (x, c) => c.copy(proxyHost = Option(x)) } optional()
@@ -45,7 +45,7 @@ class MainLoop(args: Array[String]) extends SparkILoop {
     opt[String]("region") action { (x, c) => c.copy(region = Option(x)) } optional()
   }
 
-  val (configuration: ClientConfiguration, provider: AWSCredentialsProvider, region: Region) =
+  lazy val (configuration: ClientConfiguration, provider: AWSCredentialsProvider, region: Region) =
     parser.parse(args, Config()).map({ config: Config =>
 
       val envProxy: Option[String] = sys.env.get("HTTP_PROXY") orElse
@@ -65,12 +65,18 @@ class MainLoop(args: Array[String]) extends SparkILoop {
       (configuration, provider, region)
     }).getOrElse(throw new RuntimeException("Could not config options."))
 
-  val clients = new Clients(provider, configuration, region)
+  lazy val clients = new Clients(provider, configuration, region)
 
-  override def beforeLoop(): Unit = {
-    clients.bindings.foreach { case (name, instance) =>
-      intp.quietBind(NamedParamClass(name, instance.getClass.getCanonicalName, instance))
+  override def createInterpreter(): Unit = {
+    if (addedClasspath != "") {
+      settings.classpath append addedClasspath
     }
+
+    val iLoopInterpreter: ILoopInterpreter = new ILoopInterpreter
+    clients.bindings.foreach { case (name, instance) =>
+      iLoopInterpreter.quietBind(NamedParamClass(name, instance.getClass.getCanonicalName, instance))
+    }
+    intp = iLoopInterpreter
   }
 
 }
