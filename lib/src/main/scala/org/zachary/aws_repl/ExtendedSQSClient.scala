@@ -100,10 +100,11 @@ class ExtendedSQSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     }
   }
 
-  def setQueueRedrivePolicy(queueName: String, deadLetterTargetArn: String, maxReceiveCount: Int = 5): Unit = {
+  def setQueueRedrivePolicy(queueName: String, dlQueueName: String, maxReceiveCount: Int = 5): Unit = {
 
     implicit val formats = Serialization.formats(NoTypeHints)
     try {
+      val deadLetterTargetArn: String = getQueueArn(dlQueueName)
       val redrivePolicy: String = write(RedrivePolicy(deadLetterTargetArn, maxReceiveCount))
       val attributes = Map[String, String]("RedrivePolicy" -> redrivePolicy)
       val request = new SetQueueAttributesRequest(getQueueUrl(queueName).getQueueUrl, attributes.asJava)
