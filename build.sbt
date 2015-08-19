@@ -14,6 +14,7 @@ lazy val lib = project.in(file("lib")).settings(
     "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
     "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsVersion,
     "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
+    "com.amazonaws" % "aws-java-sdk-iam" % awsVersion,
     "com.amazonaws" % "aws-java-sdk-rds" % awsVersion,
     "com.amazonaws" % "aws-java-sdk-route53" % awsVersion,
     "com.amazonaws" % "aws-java-sdk-s3" % awsVersion,

@@ -9,6 +9,7 @@ class Clients(provider: AWSCredentialsProvider, configuration: ClientConfigurati
   val asg = new ExtendedASGClient(provider, configuration)
   val cloudwatch = new ExtendedCloudWatchClient(provider, configuration)
   val ec2 = new ExtendedEC2Client(provider, configuration)
+  val iam = new ExtendedIAMClient(provider, configuration)
   val rds = new ExtendedRDSClient(provider, configuration)
   val s3 = new ExtendedS3Client(provider, configuration)
   lazy val sns = new ExtendedSNSClient(provider, configuration, sqs)
@@ -19,6 +20,7 @@ class Clients(provider: AWSCredentialsProvider, configuration: ClientConfigurati
     "asg" -> asg,
     "cloudwatch" -> cloudwatch,
     "ec2" -> ec2,
+    "iam" -> iam,
     "rds" -> rds,
     "route53" -> route53,
     "s3" -> s3,
