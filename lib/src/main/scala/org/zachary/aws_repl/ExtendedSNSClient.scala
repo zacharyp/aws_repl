@@ -10,7 +10,11 @@ class ExtendedSNSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration, 
   extends AmazonSNSClient(awscp, cc) {
 
   def subscribeQueue(topicArn: String, queueName: String, raw: Boolean = false): Unit = {
-    val subscribeResult = subscribe(topicArn, "sqs", sqs.getQueueArn(queueName))
+    subscribeQueueByQueueARN(topicArn, sqs.getQueueArn(queueName), raw)
+  }
+
+  def subscribeQueueByQueueARN(topicArn: String, queueArn: String, raw: Boolean = false): Unit = {
+    val subscribeResult = subscribe(topicArn, "sqs", queueArn)
 
     if (raw) {
       val arn: String = subscribeResult.getSubscriptionArn
@@ -20,8 +24,13 @@ class ExtendedSNSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration, 
 
   def unsubscribeQueue(topicArn: String, queueName: String): Unit = {
     val queueArn = sqs.getQueueArn(queueName)
+    unsubscribeQueueByArn(topicArn, queueArn)
+  }
+
+  def unsubscribeQueueByArn(topicArn: String, queueArn: String): Unit = {
     listSubscriptionsByTopic(topicArn).getSubscriptions.asScala.filter(_.getEndpoint == queueArn).foreach(sub => {
       unsubscribe(sub.getSubscriptionArn)
     })
+
   }
 }
