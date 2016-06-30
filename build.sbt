@@ -1,11 +1,11 @@
 // basic setup stuff
-lazy val scalaV = "2.11.7"
+lazy val scalaV = "2.11.8"
 
 name := "aws_repl"
 version := "1.1.0"
 scalaVersion := scalaV
 
-lazy val awsVersion = "1.9.31"
+lazy val awsVersion = "1.11.12"
 
 lazy val lib = project.in(file("lib")).settings(
   scalaVersion := scalaV,
