@@ -6,7 +6,6 @@ import com.amazonaws.services.ec2.AmazonEC2Client
 import com.amazonaws.services.ec2.model._
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) extends AmazonEC2Client(awscp, cc) {
 
@@ -58,19 +57,43 @@ class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
     deregisterImage(new DeregisterImageRequest(amiId))
   }
 
-  def findInstanceIPsByTagName(tagName: String): Map[String, String] = {
-    val result = mutable.Map[String, String]()
+  case class InstancesResult(instanceValues: List[InstanceValues]) {
 
+    def print: String = {
+      instanceValues.map(_.toString).mkString("\n")
+    }
+
+    def printIPs: String = {
+      instanceValues.map(_.toIPs).mkString("\n")
+    }
+
+  }
+
+  case class InstanceValues(
+    instanceId: String,
+    state: String,
+    privateIPAddress: String,
+    publicIPAddress: String
+  ) {
+
+    override def toString: String = {
+      f"$instanceId%-12s$state%-10s$privateIPAddress%-15s$publicIPAddress"
+    }
+
+    def toIPs: String = {
+      f"$privateIPAddress%-15s$publicIPAddress"
+    }
+  }
+
+  def findInstanceValuesByTagName(tagName: String): InstancesResult = {
     val filters: Filter = new Filter("tag:Name", List(tagName).asJava)
     val request = new DescribeInstancesRequest
     request.setFilters(List(filters).asJava)
 
-    describeInstances(request).getReservations.iterator().asScala.foreach(reservation => {
-      reservation.getInstances.asScala.foreach(instance => {
-        result.put(instance.getPrivateIpAddress, instance.getPublicIpAddress)
+    InstancesResult(describeInstances(request).getReservations.iterator().asScala.flatMap(reservation => {
+      reservation.getInstances.asScala.map(i => {
+        InstanceValues(i.getInstanceId, i.getState.getName, i.getPrivateIpAddress, i.getPublicIpAddress)
       })
-    })
-
-    result.toMap
+    }).toList.sortBy(_.privateIPAddress))
   }
 }
