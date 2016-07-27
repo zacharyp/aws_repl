@@ -67,6 +67,9 @@ class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
       instanceValues.map(_.toIPs).mkString("\n")
     }
 
+    def printPublicIPs: String = {
+      instanceValues.map(_.publicIPAddress).mkString("\n")
+    }
   }
 
   case class InstanceValues(
@@ -95,5 +98,25 @@ class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
         InstanceValues(i.getInstanceId, i.getState.getName, i.getPrivateIpAddress, i.getPublicIpAddress)
       })
     }).toList.sortBy(_.privateIPAddress))
+  }
+
+  private def getInstanceName(instance: Instance): String =
+    instance.getTags.asScala.find(_.getKey == "Name").map(_.getValue).getOrElse("No Name")
+
+  def printAllInstances(): Unit = {
+    val request = new DescribeInstancesRequest
+    println("\n")
+    println("Name,InstanceId,InstanceType,State,PublicIP,Owners,Team,LaunchTime")
+    describeInstances(request).getReservations.iterator().asScala.map(_.getInstances.asScala).flatten.toList
+      .sortBy(getInstanceName) foreach (i => {
+      val name = getInstanceName(i)
+      val state = i.getState.getName
+      val owners = i.getTags.asScala.find(_.getKey == "owners").map(_.getValue.replace(",", ";")).getOrElse("No owner")
+      val team = i.getTags.asScala.find(_.getKey == "Team").map(_.getValue).getOrElse("No team")
+      println(
+        s"$name,${i.getInstanceId},${i.getInstanceType},$state,${i.getPublicIpAddress},$owners,$team," +
+          s"${i.getLaunchTime}")
+    })
+    println("\n")
   }
 }
