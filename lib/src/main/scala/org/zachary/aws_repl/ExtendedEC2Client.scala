@@ -67,8 +67,12 @@ class ExtendedEC2Client(awscp: AWSCredentialsProvider, cc: ClientConfiguration) 
       instanceValues.map(_.toIPs).mkString("\n")
     }
 
+    def printPrivateIPs: String = {
+      instanceValues.map(_.privateIPAddress).sortBy(identity).mkString("\n")
+    }
+
     def printPublicIPs: String = {
-      instanceValues.map(_.publicIPAddress).mkString("\n")
+      instanceValues.map(_.publicIPAddress).sortBy(identity).mkString("\n")
     }
   }
 
