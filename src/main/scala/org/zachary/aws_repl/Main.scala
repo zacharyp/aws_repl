@@ -60,7 +60,7 @@ class MainLoop(args: Array[String]) extends ILoop {
         .withProxyPort(config.proxyPort orElse proxyPortFromEnv getOrElse (-1))
       val provider = config.profile map (new ProfileCredentialsProvider(_)) getOrElse
                      new DefaultAWSCredentialsProviderChain
-      val region = Region.getRegion(Regions.fromName(config.region.getOrElse("us-west-2")))
+      val region = Region.getRegion(Regions.fromName(config.region.getOrElse("us-east-1")))
 
       (configuration, provider, region)
     }).getOrElse(throw new RuntimeException("Could not config options."))
