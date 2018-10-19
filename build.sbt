@@ -5,7 +5,7 @@ name := "aws_repl"
 version := "1.1.0"
 scalaVersion := scalaV
 
-lazy val awsVersion = "1.11.12"
+lazy val awsVersion = "1.11.430"
 
 lazy val lib = project.in(file("lib")).settings(
   scalaVersion := scalaV,
@@ -27,11 +27,10 @@ lazy val lib = project.in(file("lib")).settings(
 
 lazy val repl = project.in(file("."))
   .dependsOn(lib)
-  .settings(buildInfoSettings:_*)
+  .enablePlugins(BuildInfoPlugin)
   .settings(
     scalaVersion := scalaV,
-    sourceGenerators in Compile <+= buildInfo,
-    buildInfoKeys := Seq[BuildInfoKey](name, version),
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "org.zachary.aws_repl",
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaV,
