@@ -1,6 +1,7 @@
 // basic setup stuff
 lazy val scalaV = "2.11.8"
 
+
 name := "aws_repl"
 version := "1.1.0"
 scalaVersion := scalaV
