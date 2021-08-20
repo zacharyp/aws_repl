@@ -11,7 +11,7 @@ class ExtendedRoute53Client(awscp: AWSCredentialsProvider, cc: ClientConfigurati
   extends AmazonRoute53Client(awscp, cc) {
 
   def listHZones(): Seq[HostedZone] = {
-    listHostedZones().getHostedZones.asScala
+    listHostedZones().getHostedZones.asScala.toSeq
   }
 
   def getHostedZoneId(name: String): String =

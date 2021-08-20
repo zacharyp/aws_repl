@@ -1,12 +1,13 @@
 // basic setup stuff
-lazy val scalaV = "2.11.8"
-
+lazy val scalaV = "2.13.6"
 
 name := "aws_repl"
-version := "1.1.0"
+version := "2.0.0"
 scalaVersion := scalaV
 
-lazy val awsVersion = "1.11.430"
+run / fork := true
+
+lazy val awsVersion = "1.12.51"
 
 lazy val lib = project.in(file("lib")).settings(
   scalaVersion := scalaV,
@@ -22,19 +23,18 @@ lazy val lib = project.in(file("lib")).settings(
     "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
     "com.amazonaws" % "aws-java-sdk-sqs" % awsVersion,
     "org.scala-lang" % "scala-compiler" % scalaV,
-    "org.json4s" %% "json4s-jackson" % "3.2.10"
+    "org.scala-lang" % "scala-library" % scalaV,
+    "org.json4s" %% "json4s-jackson" % "4.0.3"
   )
 )
 
 lazy val repl = project.in(file("."))
   .dependsOn(lib)
-  .enablePlugins(BuildInfoPlugin)
   .settings(
     scalaVersion := scalaV,
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.zachary.aws_repl",
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaV,
-      "com.github.scopt" %% "scopt" % "3.2.0"
+      "org.scala-lang" % "scala-library" % scalaV,
+      "com.github.scopt" %% "scopt" % "3.7.1"
     ),
-    mainClass in (Compile, run) := Some("org.zachary.aws_repl.Main")) //aggregate(lib)
+    Compile / run / mainClass := Some("org.zachary.aws_repl.Main")) //aggregate(lib)

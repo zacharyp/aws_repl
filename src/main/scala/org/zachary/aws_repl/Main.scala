@@ -9,10 +9,10 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.{Region, Regions}
 
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{ILoop, NamedParamClass}
+//import scala.tools.nsc.interpreter.shell.{ILoop, ShellConfig, NamedParamClass}
+import scala.tools.nsc.interpreter.shell.{ILoop, ShellConfig}
 
 object Main extends App {
-
   val settings = new Settings
   settings.Yreplsync.value = true
   //  settings.Xnojline.value = true  // Turns off tab completion
@@ -24,25 +24,28 @@ object Main extends App {
     c.toString.contains("at sbt.")
   }
 
-  if (isRunFromSBT) {
+  //if (isRunFromSBT) {
     //an alternative to 'usejavacp' setting, when launching from within SBT
-    settings.embeddedDefaults[Main.type]
-  } else {
+    //settings.embeddedDefaults[Main.type]
+  //} else {
     //use when launching normally outside SBT
     settings.usejavacp.value = true
-  }
+  //}
 
-  new MainLoop(args).process(settings)
+  val config: ShellConfig = ShellConfig(settings)
+
+  new MainLoop(config, args).run(settings)
 }
 
-class MainLoop(args: Array[String]) extends ILoop {
+class MainLoop(config: ShellConfig, args: Array[String]) extends ILoop(config) {
 
   lazy val parser = new scopt.OptionParser[Config]("aws_repl") {
-    head(BuildInfo.name, BuildInfo.version)
-    opt[Int]("proxyPort") action { (x, c) => c.copy(proxyPort = Option(x)) } optional()
-    opt[String]("proxyHost") action { (x, c) => c.copy(proxyHost = Option(x)) } optional()
-    opt[String]("profile") action { (x, c) => c.copy(profile = Option(x)) } optional()
-    opt[String]("region") action { (x, c) => c.copy(region = Option(x)) } optional()
+    //head(BuildInfo.name, BuildInfo.version)
+    head("aws_repl", "2.0.0")
+    opt[Int]("proxyPort").action { (x, c) => c.copy(proxyPort = Option(x)) }.optional()
+    opt[String]("proxyHost").action { (x, c) => c.copy(proxyHost = Option(x)) }.optional()
+    opt[String]("profile").action { (x, c) => c.copy(profile = Option(x)) }.optional()
+    opt[String]("region").action { (x, c) => c.copy(region = Option(x)) }.optional()
   }
 
   lazy val (configuration: ClientConfiguration, provider: AWSCredentialsProvider, region: Region) =
@@ -67,6 +70,7 @@ class MainLoop(args: Array[String]) extends ILoop {
 
   lazy val clients = new Clients(provider, configuration, region)
 
+  /*
   override def createInterpreter(): Unit = {
     if (addedClasspath != "") {
       settings.classpath append addedClasspath
@@ -78,6 +82,7 @@ class MainLoop(args: Array[String]) extends ILoop {
     }
     intp = iLoopInterpreter
   }
+  */
 
 }
 
