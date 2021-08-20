@@ -3,8 +3,10 @@ package org.zachary.aws_repl
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.sns.AmazonSNSClient
+import com.amazonaws.services.sns.model.{GetSubscriptionAttributesResult, Subscription}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class ExtendedSNSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration, sqs: ExtendedSQSClient)
   extends AmazonSNSClient(awscp, cc) {
@@ -30,6 +32,19 @@ class ExtendedSNSClient(awscp: AWSCredentialsProvider, cc: ClientConfiguration, 
   def unsubscribeQueueByArn(topicArn: String, queueArn: String): Unit = {
     listSubscriptionsByTopic(topicArn).getSubscriptions.asScala.filter(_.getEndpoint == queueArn).foreach(sub => {
       unsubscribe(sub.getSubscriptionArn)
+    })
+
+  }
+
+  def describeTopicSubscriptions(topicArn: String): Unit = {
+    val subscriptions = listSubscriptionsByTopic(topicArn).getSubscriptions.asScala
+
+    subscriptions.foreach(sub => {
+      println()
+      println(sub.getEndpoint)
+      println(sub.getProtocol)
+      println(sub.getSubscriptionArn)
+      println()
     })
 
   }
